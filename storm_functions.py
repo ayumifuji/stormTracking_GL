@@ -82,8 +82,18 @@ def detect_storms(field, lon, lat, res, Npix_min, cyc, globe=False):
 
     # ssh_crits is an array of ssh levels over which to perform storm detection loop
     # ssh_crits increasing for 'cyclonic', decreasing for 'anticyclonic'
-    ssh_crits = np.linspace(np.nanmin(field), np.nanmax(field), 200)
+    #ssh_crits = np.linspace(np.nanmin(field), np.nanmax(field), 200)
+    # afm 20220228 - fewer levels, faster. 200 tended to result in duplicated storms?
+    #ssh_crits = np.linspace(np.nanmin(field), np.nanmax(field), 20)
+    # afm 20220304 - TEST begin (floor anticyclone at 1010mb, cap cyclones at 995mb)
+    if cyc == 'anticyclonic':
+    	ssh_crits = np.linspace(101000., np.nanmax(field), 10)
+    elif cyc == 'cyclonic':
+    	ssh_crits = np.linspace(np.nanmin(field), 99500., 10)
+    # afm 20220304 - TEST end
     ssh_crits.sort()
+    #print 'ssh_crits',ssh_crits
+
     if cyc == 'anticyclonic':
         ssh_crits = np.flipud(ssh_crits)
 
@@ -95,6 +105,7 @@ def detect_storms(field, lon, lat, res, Npix_min, cyc, globe=False):
             regions, nregions = ndimage.label( (field>ssh_crit).astype(int) )
         elif cyc == 'cyclonic':
             regions, nregions = ndimage.label( (field<ssh_crit).astype(int) )
+#	print 'nregions:',nregions
 
         for iregion in range(nregions):
  
@@ -105,13 +116,17 @@ def detect_storms(field, lon, lat, res, Npix_min, cyc, globe=False):
  
     # 3. Detect presence of local maximum (minimum) for anticylones (cyclones), reject if non-existent
             interior = ndimage.binary_erosion(region)
-            exterior = region.astype(bool) - interior
+#            exterior = region.astype(bool) - interior
+	    exterior = np.subtract(region.astype(bool), interior, dtype=np.int)
             if interior.sum() == 0:
+		#print 'interior sum = 0'
                 continue
             if cyc == 'anticyclonic':
                 has_internal_ext = field[interior].max() > field[exterior].max()
+		#print 'acyc:', iregion 
             elif cyc == 'cyclonic':
                 has_internal_ext = field[interior].min() < field[exterior].min()
+		#print 'cyc:', iregion 
  
     # 4. Find amplitude of region, reject if < amp_thresh
             if cyc == 'anticyclonic':
@@ -125,27 +140,42 @@ def detect_storms(field, lon, lat, res, Npix_min, cyc, globe=False):
  
     # Quit loop if these are not satisfied
             if np.logical_not(storm_area_within_limits * has_internal_ext * is_tall_storm):
+		#print 'quit loop', iregion,ssh_crit
                 continue
  
     # Detected storms:
             if storm_area_within_limits * has_internal_ext * is_tall_storm:
+#		print 'storm detected:', iregion,ssh_crit,storm_area_within_limits, has_internal_ext, is_tall_storm
                 # find centre of mass of storm
                 storm_object_with_mass = field * region
                 storm_object_with_mass[np.isnan(storm_object_with_mass)] = 0
                 j_cen, i_cen = ndimage.center_of_mass(storm_object_with_mass)
                 lon_cen = np.interp(i_cen, range(0,len(lon)), lon)
                 lat_cen = np.interp(j_cen, range(0,len(lat)), lat)
+		##  afm 20220304 TEST if a mass center is nan (i.e. within already detected mass of storm), do not append.
+		#if np.isnan(field[np.int(j_cen+0.5),np.int(i_cen+0.5)]):
+		#	print "a mass center NaN - likely an already detected storm"
+		#	continue	
+#		print i_cen, j_cen, lon_cen, lat_cen, lon[np.int(i_cen+0.5)],lat[np.int(j_cen+0.5)],field[np.int(j_cen+0.5),np.int(i_cen+0.5)]
                 # Remove storms detected outside global domain (lon < 0, > 360)
-                if globe * (lon_cen >= 0.) * (lon_cen <= 360.):
-                    # Save storm
-                    lon_storms = np.append(lon_storms, lon_cen)
-                    lat_storms = np.append(lat_storms, lat_cen)
-                    # assign (and calculated) amplitude, area, and scale of storms
-                    amp_storms = np.append(amp_storms, amp_abs)
+#                if globe * (lon_cen >= 0.) * (lon_cen <= 360.):
+#                    # Save storm
+#                    lon_storms = np.append(lon_storms, lon_cen)
+#                    lat_storms = np.append(lat_storms, lat_cen)
+#                    # assign (and calculated) amplitude, area, and scale of storms
+#                    amp_storms = np.append(amp_storms, amp_abs)
+# afm bug? no info saved if no globe. fixed.
+		# Save storm
+                lon_storms = np.append(lon_storms, lon_cen)
+                lat_storms = np.append(lat_storms, lat_cen)
+                # assign (and calculated) amplitude, area, and scale of storms
+                amp_storms = np.append(amp_storms, amp_abs)
                 # remove its interior pixels from further storm detection
                 storm_mask = np.ones(field.shape)
                 storm_mask[interior.astype(int)==1] = np.nan
                 field = field * storm_mask
+	        #print 'end: ', lon_storms, lat_storms, amp_storms
+
 
     return lon_storms, lat_storms, amp_storms
 

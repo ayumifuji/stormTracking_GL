@@ -17,7 +17,7 @@ import mpl_toolkits.basemap as bm
 # Load storm data
 #
 
-data = np.load('storm_track.npz')
+data = np.load('storm_track_slp.npz')
 storms = data['storms']
 
 #
@@ -190,5 +190,5 @@ plt.title('Proportion of cyclones (vs. anticyclones)')
 H = plt.colorbar()
 H.set_label('Proportion (1 = all cylones, 0 = all anticyclones)')
 plt.clim(0, 1)
-# plt.savefig('figures/storm_proportion', bbox_inches='tight', pad_inches=0.05, dpi=300)
+plt.savefig('figures/storm_proportion', bbox_inches='tight', pad_inches=0.05, dpi=300)
 
