@@ -117,7 +117,7 @@ def detect_storms(field, lon, lat, res, Npix_min, cyc, globe=False):
     # 3. Detect presence of local maximum (minimum) for anticylones (cyclones), reject if non-existent
             interior = ndimage.binary_erosion(region)
 #            exterior = region.astype(bool) - interior
-	    exterior = np.subtract(region.astype(bool), interior, dtype=np.int)
+            exterior = np.subtract(region.astype(bool), interior, dtype=np.int)
             if interior.sum() == 0:
 		#print 'interior sum = 0'
                 continue
@@ -268,7 +268,8 @@ def track_storms(storms, det_storms, tt, year, month, day, hour, dt, prop_speed=
 
     # List of unassigned storms at time tt
 
-    unassigned = range(det_storms[tt]['N'])
+    #unassigned = range(det_storms[tt]['N'])
+    unassigned = list(range(det_storms[tt]['N'])) # python 3
 
     # For each existing storm (t<tt) loop through unassigned storms and assign to existing storm if appropriate
 

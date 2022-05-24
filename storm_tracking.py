@@ -16,7 +16,7 @@ import storm_functions as storm
 
 # Load in detected positions and date/hour information
 filename = '/nfs/ayumif/projects/ayumif/summer_2022/stormTracking_GL/storm_det_slp'
-data = np.load(filename + '.npz')
+data = np.load(filename + '.npz',allow_pickle=True,encoding='latin1')
 det_storms = data['storms']
 year = data['year']
 month = data['month']

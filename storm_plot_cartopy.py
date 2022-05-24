@@ -32,7 +32,7 @@ for ed in range(len(storms)):
     # Select for: cyclonic storms 
     if (storms[ed]['type'] == 'cyclonic'):
         ax.plot(storms[ed]['lon'][:],storms[ed]['lat'][:],'-', linewidth=1, alpha=0.6)
-#        print(storms[ed]['lon'], storms[ed]['lat'], storms[ed]['type'])
+        print(storms[ed]['lon'], storms[ed]['lat'], storms[ed]['type'])
 plt.title('Storm tracks (2021 Dec 8-18)')
 plt.savefig('figures/storm_tracks_GreatLakes', bbox_inches='tight', pad_inches=0.05, dpi=300)
 

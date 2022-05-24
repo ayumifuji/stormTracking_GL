@@ -57,15 +57,12 @@ for yr in range(yearStart[dataset], yearEnd[dataset]+1):
             fileobj = Dataset(filename[dataset], 'r')
             time = fileobj.variables['time'][:]
             timeunit = fileobj.variables['time'].units
-            time_ordinalDays = time/24. + date(1900,1,1).toordinal()
-            #time_ordinalDays = time/24. + date(yr,mth,1).toordinal()
-            year = np.append(year, [date.fromordinal(np.floor(time_ordinalDays[tt]).astype(int)).year for tt in range(len(time))])
-            month = np.append(month, [date.fromordinal(np.floor(time_ordinalDays[tt]).astype(int)).month for tt in range(len(time))])
-            day = np.append(day, [date.fromordinal(np.floor(time_ordinalDays[tt]).astype(int)).day for tt in range(len(time))])
-	    date_tmp = num2date(time,timeunit,calendar = "gregorian")	
-	    for itt in range(len(time)):
-           	 hour = np.append(hour, date_tmp[itt].hour)
-            #hour = np.append(hour, (np.mod(time_ordinalDays, 1)*24).astype(int))
+            date_tmp = num2date(time,timeunit,calendar = "gregorian")	
+            for itt in range(len(time)):
+           	 year  = np.append(year, date_tmp[itt].year)
+           	 month = np.append(month, date_tmp[itt].month)
+           	 day   = np.append(day, date_tmp[itt].day)
+           	 hour  = np.append(hour, date_tmp[itt].hour)
             slp0 = fileobj.variables[var[dataset]][:].astype(float)
             slp = np.append(slp, slp0, axis=0)
             fileobj.close()
