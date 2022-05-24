@@ -52,21 +52,20 @@ hour = np.zeros((0,))
 for yr in range(yearStart[dataset], yearEnd[dataset]+1):
 
     if dataset == 'ERA5':
-        #for mth in range(1, 12+1):
-        for mth in range(12, 12+1):
-            fileobj = Dataset(filename[dataset], 'r')
-            time = fileobj.variables['time'][:]
-            timeunit = fileobj.variables['time'].units
-            date_tmp = num2date(time,timeunit,calendar = "gregorian")	
-            for itt in range(len(time)):
-           	 year  = np.append(year, date_tmp[itt].year)
-           	 month = np.append(month, date_tmp[itt].month)
-           	 day   = np.append(day, date_tmp[itt].day)
-           	 hour  = np.append(hour, date_tmp[itt].hour)
-            slp0 = fileobj.variables[var[dataset]][:].astype(float)
-            slp = np.append(slp, slp0, axis=0)
-            fileobj.close()
-            print(yr, mth, slp0.shape[0])
+        #for mth in range(12, 12+1):
+        fileobj = Dataset(filename[dataset], 'r')
+        time = fileobj.variables['time'][:]
+        timeunit = fileobj.variables['time'].units
+        date_tmp = num2date(time,timeunit,calendar = "gregorian")	
+        for itt in range(len(time)):
+            year  = np.append(year, date_tmp[itt].year)
+            month = np.append(month, date_tmp[itt].month)
+            day   = np.append(day, date_tmp[itt].day) 
+            hour  = np.append(hour, date_tmp[itt].hour)
+        slp0 = fileobj.variables[var[dataset]][:].astype(float)
+        slp = np.append(slp, slp0, axis=0)
+        fileobj.close() 
+       # print(yr, mth, slp0.shape[0])
 
     if (dataset == 'NCEP_20CRV2C') + (dataset == 'NCEP_R1'):
         filename = {'NCEP_20CRV2C': pathroot['NCEP_20CRV2C'] + 'prmsl.' + str(yr) + '.nc', 'NCEP_R1': pathroot['NCEP_R1'] + 'slp.' + str(yr) + '.nc'}
